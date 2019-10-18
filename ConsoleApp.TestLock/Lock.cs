@@ -49,7 +49,7 @@ namespace ConsoleApp.TestLock
 
         private async Task<long> GetServiceResultInternalAsync()
         {
-            await Task.Delay(1000).ConfigureAwait(false);
+            await Task.Delay(100_000).ConfigureAwait(false);
             return 1;
         }
     }

@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
 namespace ConsoleApp.TestLock
 {
@@ -9,6 +11,10 @@ namespace ConsoleApp.TestLock
     {
         static void Main(string[] args)
         {
+            
+            var summary = BenchmarkRunner.Run<Test2>();
+
+            return;
             for (int i = 0; i < 3; i++)
             {
                 var test0 = new Test();
@@ -25,6 +31,32 @@ namespace ConsoleApp.TestLock
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
             }
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class Test2
+    {
+        private Lock _lock;
+        private Interlock _interlock;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            _lock = new Lock();
+            _interlock = new Interlock();
+        }
+
+        [Benchmark]
+        public int Lock()
+        {
+            return _lock.GetServiceResultAsync().Id;
+        }
+
+        [Benchmark]
+        public int Interlock()
+        {
+            return _interlock.GetServiceResultAsync().Id;
         }
     }
 
