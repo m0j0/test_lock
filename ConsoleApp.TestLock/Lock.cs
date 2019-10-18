@@ -26,6 +26,13 @@ namespace ConsoleApp.TestLock
                 return await GetServiceResultInternalAsync().ConfigureAwait(false);
             }
 
+            var task = _task;
+            if (task != null &&
+                !task.IsCompleted)
+            {
+                return task;
+            }
+
             lock (_lock)
             {
                 if (_task == null ||
