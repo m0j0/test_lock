@@ -9,6 +9,12 @@ namespace ConsoleApp.TestLock
     {
         private readonly object _lock = new object();
         private Task<long> _task;
+        private readonly Action<Task<long>> _nullifyContinuation;
+
+        public Lock()
+        {
+            _nullifyContinuation = Nullify;
+        }
 
         public Task<long> GetServiceResultAsync()
         {
@@ -17,7 +23,7 @@ namespace ConsoleApp.TestLock
                 // to execute lock scope very fast
                 await Task.Yield();
 
-                return await GetServiceResultInternalAsync();
+                return await GetServiceResultInternalAsync().ConfigureAwait(false);
             }
 
             lock (_lock)
@@ -26,22 +32,24 @@ namespace ConsoleApp.TestLock
                     _task.IsCompleted)
                 {
                     _task = GetTaskAsync();
-                    _task.ContinueWith(task =>
-                    {
-                        lock (_lock)
-                        {
-                            _task = null;
-                        }
-                    });
+                    _task.ContinueWith(_nullifyContinuation);
                 }
 
                 return _task;
             }
         }
 
+        private void Nullify(Task<long> task)
+        {
+            lock (_lock)
+            {
+                _task = null;
+            }
+        }
+
         private async Task<long> GetServiceResultInternalAsync()
         {
-            await Task.Delay(1000);
+            await Task.Delay(1000).ConfigureAwait(false);
             return 1;
         }
     }
