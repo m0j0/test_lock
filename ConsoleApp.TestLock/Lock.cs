@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleApp.TestLock
@@ -26,12 +27,23 @@ namespace ConsoleApp.TestLock
                 return await GetServiceResultInternalAsync().ConfigureAwait(false);
             }
 
-            var task = _task;
+            var task = Volatile.Read(ref _task);
             if (task != null &&
                 !task.IsCompleted)
             {
                 return task;
             }
+
+            //Task<long> task;
+            //lock (_lock)
+            //{
+            //    task = _task;
+            //}
+            //if (task != null &&
+            //    !task.IsCompleted)
+            //{
+            //    return task;
+            //}
 
             lock (_lock)
             {

@@ -34,7 +34,6 @@ namespace ConsoleApp.TestLock
         }
     }
 
-    [HtmlExporter]
     [MemoryDiagnoser]
     public class Test2
     {
